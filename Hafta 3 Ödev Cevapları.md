@@ -40,5 +40,46 @@ Kelime anlamı genişletilebilir metod olan Extension Method'lar C#3.0 ile hayat
 - Extension metodların aldığı ilk parametre, bu metodun hangi nesne üzerinde çalışacağını belirtir. Ve alacağı ilk parametrenin önüne "this" anahtar kelimesi getirilir. Böylece metodun bu nesne üzerinde işlem yapacağı belirtilmiş olur.
 - Extension metodların kullanımı da çok kolaydır. Extension metodları kullanacağınız kaynak koda, using anahtar kelimesini kullanarak eklediğinizde bu metodlarınızı kullanabilirsiniz.
 
+### SQLite Nedir, Nasıl Kullanılır ?
+Sqlite dosya tabanlı hafif database’ler içerisinde günümüzde en çok tercih edilenlerin başında geliyor. Özellikle mobil uygulamalar ve basit programlar söz konusu olduğunda koskoca DBMS (Veritabanı yönetim sistemi) kurmak yerine işimizi basitçe halletmemizi sağlayan sqlite bizi pek çok dertten kurtarıyor. Sqlite genel olarak uzaktan erişim ihtiyacı olmayan, kullanıcı doğrulaması gibi güvenlik gerektirmeyen sistemlerde tercih edilir. Mesela bir masaüstü program yaptınız, ya da Raspberry Pi gibi bir geliştirme kartı üzerinde yerel database kullanma ihtiyacınız doğdu. Sqlite sizi pek çok dertten kurtarır.
 
+Şimdi C# ile SQlite kullanımı konusuna gelecek olursak, öncelikli olarak Visual Studio içerisinde nuget ile Sqlite’ı projemize dahil etmeliyiz.
 
+```c#
+SQLiteConnection.CreateFile("YeniVeriTabani.db");
+```
+
+ Yukarıdaki ifade “YeniVeriTabani” isminde bir tane database oluşturur. ancak dikkat edin, bu komutu her çalıştırdığınızda eskisini silip yenisini kurar. Bu arada eğer yol belirtmezseniz programı çalıştırıyorsanız dosyayı oraya oluşturur. Mesela debug modda compile edip çalıştırıyorsanız projenizin **%projeyolunuz%/bin/Debug/YeniVeriTabani.db** üzerine kurulum gerçekleşir.
+
+###### Sadece Bir Kez Sqlite Dosya Oluşturma İşlemi
+
+programınız her çalıştığında eski database’i silip yenisini kurarsa hiçbir veri tutamazsınız. Bu yüzden aynı dosya adı mevcut mu bunu kontrol etmemiz gerekir. Kodu birazcık geliştirelim;
+
+```c#
+if (!File.Exists("YeniVeriTabani.db"))
+{
+SQLiteConnection.CreateFile("YeniVeriTabani.db");
+}
+```
+
+bu sefer kodu çalıştırdığımızda eğer aynı isimde veri tabanı yoksa oluşturacak. Varsa eskisini silmeden muhafaza edecek.
+
+###### C# Sqlite Bağlantı Kurma
+
+Sqlite Dosyamıza Bağlantı kurmak için öncelikli olarak iki tane **global değişken** oluşturalım.
+
+```c#
+public SQLiteConnection con = null;
+```
+
+**SqliteConnection** sınıfı nuget ile yüklediğimiz kütüphanenin içerisinde yer alır. Buradan türettiğimiz nesneyle bağlantı işlemlerimizi gerçekleştireceğiz. Şimdi C# Sqlite bağlantısı sağlamak için bir tane fonksiyon oluşturalım;
+
+```c#
+void baglan()
+{
+con = new SQLiteConnection("Data Source=YeniVeriTabani.db;Version=3;");
+con.Open();
+}
+```
+
+dikkat edin, con nesnesi global bir değişken. Bir sınıf içerisinde çalışırken global değişkene erişime dikkat etmeliyiz. Bu bağlantıyı çağırdığımızda Veritabanına bağlantıyı sağlamış oluyoruz.
